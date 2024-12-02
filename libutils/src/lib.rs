@@ -80,6 +80,7 @@ where T: Ord + Clone
     (min, max)
 }
 
+
 pub fn frequencies<T> (vector: std::vec::Vec<T>) -> HashMap<T, usize> where T:Eq + Hash {
     let mut result = HashMap::new();
     for item in vector.into_iter() {
