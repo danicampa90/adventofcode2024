@@ -1,3 +1,8 @@
 [workspace]
-members = [ "day1", "day2","libutils"]
+members = [ "day1", "day2", "day3","libutils"]
 resolver = "2"
+
+[workspace.dependencies]
+libutils = { version = "0.1.0", path = "./libutils" }
+thiserror = "2.0.3"
+regex = "1.11.1"
