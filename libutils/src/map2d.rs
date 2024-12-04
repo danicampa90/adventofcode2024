@@ -1,13 +1,22 @@
-
-pub struct Map2D<T> where T:Copy {
+pub struct Map2D<T>
+where
+    T: Copy,
+{
     data: Vec<T>,
     default: T,
     size_x: usize,
 }
 
-impl<T> Map2D<T> where T:Copy{
-    pub fn new(default:T, size_x: usize) -> Self {
-        Self {data: vec![], default, size_x}
+impl<T> Map2D<T>
+where
+    T: Copy,
+{
+    pub fn new(default: T, size_x: usize) -> Self {
+        Self {
+            data: vec![],
+            default,
+            size_x,
+        }
     }
 
     pub fn size_x(&self) -> usize {
@@ -17,12 +26,12 @@ impl<T> Map2D<T> where T:Copy{
         if self.data.len() == 0 {
             0
         } else {
-            ((self.data.len()-1) / self.size_x) + 1
+            ((self.data.len() - 1) / self.size_x) + 1
         }
     }
 
-    pub fn get_value(&self, x:i32, y:i32) -> T{
-        if x<0 || y<0 {
+    pub fn get_value(&self, x: i32, y: i32) -> T {
+        if x < 0 || y < 0 {
             return self.default;
         }
 
@@ -30,13 +39,12 @@ impl<T> Map2D<T> where T:Copy{
         let y = y as usize;
         return self.get_value_usize(x, y);
     }
-    pub fn get_value_usize(&self, x:usize, y:usize) -> T {
-
+    pub fn get_value_usize(&self, x: usize, y: usize) -> T {
         if x >= self.size_x {
             return self.default;
         }
 
-        let idx = x + y*self.size_x;
+        let idx = x + y * self.size_x;
         if idx >= self.data.len() {
             return self.default;
         }
@@ -44,20 +52,19 @@ impl<T> Map2D<T> where T:Copy{
         self.data[idx]
     }
 
-    pub fn set_value(&mut self, x:i32, y:i32, value:T) {
+    pub fn set_value(&mut self, x: i32, y: i32, value: T) {
         if x < 0 || y < 0 {
             panic!("can't set a negative value");
         }
         self.set_value_usize(x as usize, y as usize, value)
     }
 
-
-    pub fn set_value_usize(&mut self, x:usize, y:usize, value:T) {
+    pub fn set_value_usize(&mut self, x: usize, y: usize, value: T) {
         if x > self.size_x {
             panic!("index out of bound for x");
         }
 
-        let idx = x + y*self.size_x;
+        let idx = x + y * self.size_x;
         while self.data.len() <= idx {
             self.data.push(self.default);
         }
@@ -65,7 +72,7 @@ impl<T> Map2D<T> where T:Copy{
         self.data[idx] = value;
     }
 
-    pub fn fold<F>(&self, initial:F, fold_func: fn(F, &T, i32, i32)-> F) -> F {
+    pub fn fold<F>(&self, initial: F, fold_func: fn(F, &T, i32, i32) -> F) -> F {
         let mut value = initial;
         for x in 0..self.size_x as i32 {
             for y in 0..self.size_y() as i32 {
@@ -75,9 +82,16 @@ impl<T> Map2D<T> where T:Copy{
         return value;
     }
 
-    pub fn regions_with_filter(&self, filter: fn(&T)->bool, connected_to: fn(&T,&T)->bool) -> Map2D<i32> where T:PartialEq {
+    pub fn regions_with_filter(
+        &self,
+        filter: fn(&T) -> bool,
+        connected_to: fn(&T, &T) -> bool,
+    ) -> Map2D<i32>
+    where
+        T: PartialEq,
+    {
         let mut result = Map2D::new(-1, self.size_x);
-        result.data.resize(self.size_y()*self.size_x(), -1);
+        result.data.resize(self.size_y() * self.size_x(), -1);
 
         let mut todo_list = vec![];
 
@@ -85,21 +99,21 @@ impl<T> Map2D<T> where T:Copy{
             for y in 0..self.size_y() as i32 {
                 let value_current = self.get_value(x, y);
                 if filter(&value_current) {
-                    todo_list.push((x,y));
+                    todo_list.push((x, y));
                 }
             }
         }
 
         let mut next_group_id = 0;
 
-        while let Some((x,y)) = todo_list.pop() {
+        while let Some((x, y)) = todo_list.pop() {
             let value_current = self.get_value(x, y);
 
             if !filter(&value_current) || result.get_value(x, y) != -1 {
                 continue;
             }
-            
-            let directions = [(x, y-1),(x, y+1),(x-1, y),(x+1, y)];
+
+            let directions = [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)];
 
             let mut current_group_id = None;
 
@@ -107,9 +121,9 @@ impl<T> Map2D<T> where T:Copy{
             for (nx, ny) in directions {
                 let neighbor_value = self.get_value(nx, ny);
                 let neighbor_group = result.get_value(nx, ny);
-                if filter(&neighbor_value) && connected_to(&value_current, &neighbor_value){
+                if filter(&neighbor_value) && connected_to(&value_current, &neighbor_value) {
                     if neighbor_group < 0 {
-                        todo_list.push((nx,ny))
+                        todo_list.push((nx, ny))
                     } else {
                         current_group_id = Some(neighbor_group);
                     }
@@ -120,14 +134,12 @@ impl<T> Map2D<T> where T:Copy{
                 result.set_value(x, y, group)
             } else {
                 result.set_value(x, y, next_group_id);
-                next_group_id+=1;
+                next_group_id += 1;
             }
         }
         return result;
     }
-
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -182,13 +194,13 @@ mod tests {
         t.set_value(2, 2, Some(6));
         t.set_value(1, 2, Some(6));
 
-        let regions = t.regions_with_filter(|x| x.is_some(), |x,y| x == y);
+        let regions = t.regions_with_filter(|x| x.is_some(), |x, y| x == y);
         assert_eq!(regions.get_value(0, 0), regions.get_value(1, 0));
         assert_eq!(regions.get_value(2, 1), regions.get_value(2, 2));
         assert_eq!(regions.get_value(1, 2), regions.get_value(2, 2));
         // empty(filtered-out) space should be negative
-        assert_eq!(-1, regions.get_value(2,0));
-        assert_eq!(-1, regions.get_value(0,1));
-        assert_eq!(-1, regions.get_value(1,1));
+        assert_eq!(-1, regions.get_value(2, 0));
+        assert_eq!(-1, regions.get_value(0, 1));
+        assert_eq!(-1, regions.get_value(1, 1));
     }
 }
