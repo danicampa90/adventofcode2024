@@ -20,9 +20,16 @@ where
     }
 
     pub fn directions(&self) -> &'static [(i32, i32)] {
-        &[(-1,1), (0,1), (1,1),
-           (-1, 0), /*(0, 0),*/ (1, 0),
-           (-1, -1), (0, -1), (1, -1)]
+        &[
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+            (-1, 0),
+            /*(0, 0),*/ (1, 0),
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+        ]
     }
 
     pub fn size_x(&self) -> usize {
@@ -97,12 +104,12 @@ where
         return value;
     }
 
-    pub fn coordinates_with_filter(&self, filter: fn(&T) -> bool) -> Vec<(i32, i32)>{
+    pub fn coordinates_with_filter(&self, filter: fn(&T) -> bool) -> Vec<(i32, i32)> {
         let mut result = Vec::new();
         for y in 0..self.size_y() as i32 {
             for x in 0..self.size_x() as i32 {
                 if filter(&self.get_value(x, y)) {
-                    result.push((x,y))
+                    result.push((x, y))
                 }
             }
         }
@@ -117,18 +124,27 @@ where
         move_x: i32,
         move_y: i32,
         letter: &[T],
-    ) -> bool where T: Eq {
+    ) -> bool
+    where
+        T: Eq,
+    {
         if self.get_value(x + move_x, y + move_y) == letter[0] {
             if letter.len() == 1 {
                 return true;
             } else {
-                self.matches_in_straight_direction(x + move_x, y + move_y, move_x, move_y, &letter[1..])
+                self.matches_in_straight_direction(
+                    x + move_x,
+                    y + move_y,
+                    move_x,
+                    move_y,
+                    &letter[1..],
+                )
             }
         } else {
             return false;
         }
     }
-    
+
     pub fn regions_with_filter(
         &self,
         filter: fn(&T) -> bool,
@@ -187,7 +203,6 @@ where
         return result;
     }
 }
-
 
 #[cfg(test)]
 mod tests {
