@@ -6,19 +6,17 @@ fn main() {
     let problems: Vec<Problem> =
         read_file_map_lines("input.txt", &mut |line: String| parse_line(line)).unwrap();
 
-    let mut memoizer = Memoizer::new();
-
     let mut part1_calibration_value = 0;
     for problem in problems.iter() {
-        let possible_values = memoizer.calculate(try_combinations, &problem.inputs.as_slice());
-        println!(
+        let possible_values = try_combinations(&problem.inputs.as_slice(), problem.target);
+        /*println!(
             "With problem {:?} i have target {:?} and got {:?} possible results",
             problem.inputs,
             problem.target,
             possible_values.len()
-        );
+        );*/
         if possible_values.contains(&problem.target) {
-            println!("Ok!");
+            //println!("Ok!");
             part1_calibration_value += problem.target
         }
     }
@@ -46,8 +44,8 @@ fn parse_line(line: String) -> Result<Problem, ()> {
 }
 
 fn try_combinations<'a>(
-    memoizer: &mut Memoizer<&'a [i64], HashSet<i64>>,
     input: &&'a [i64],
+    target: i64,
 ) -> HashSet<i64> {
     let last_num = input[input.len() - 1];
     let rest = &input[..input.len() - 1];
@@ -56,9 +54,12 @@ fn try_combinations<'a>(
         base_case.insert(last_num);
         return base_case;
     }
-    let rest_possible_values = memoizer.calculate(try_combinations, rest);
+    let mut rest_possible_values = try_combinations(&rest, target);
+    rest_possible_values.retain(|val| *val<=target);
     let set_with_additions = rest_possible_values.iter().map(|num| num + last_num);
     let set_with_multiplication = rest_possible_values.iter().map(|num| num * last_num);
+
+    // Comment out the set_with_concatenation for part 1
     let set_with_concatenation = rest_possible_values
         .iter()
         .map(|num| num.to_string() + last_num.to_string().as_str())
@@ -66,7 +67,7 @@ fn try_combinations<'a>(
 
     return set_with_additions
         .chain(set_with_multiplication)
-        // Comment out the concatenation for part 1
+        // Comment out set_with_concatenation for part 1
         .chain(set_with_concatenation)
         .collect();
 }
