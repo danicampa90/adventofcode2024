@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct Map2D<T>
 where
     T: Copy,
@@ -203,6 +204,8 @@ where
         return result;
     }
 }
+
+
 
 #[cfg(test)]
 mod tests {
