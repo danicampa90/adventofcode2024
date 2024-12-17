@@ -8,6 +8,7 @@ use std::path::Path;
 
 pub mod map2d;
 pub mod peekable_string;
+pub mod memoizer;
 
 pub fn read_file_to_str(fname: &str) -> Result<String, std::io::Error> {
     println!("Loading {0}", fname);
